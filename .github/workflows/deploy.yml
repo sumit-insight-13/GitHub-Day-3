@@ -1,4 +1,4 @@
-name: Azure OIDC Deploy
+name: Azure OIDC Deployment
 
 on:
   workflow_dispatch:
@@ -7,20 +7,62 @@ permissions:
   id-token: write
   contents: read
 
+env:
+  RESOURCE_GROUP: rg-github-actions-demo
+  LOCATION: centralindia
+  VNET_NAME: vnet-demo
+  NSG_NAME: nsg-demo
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Azure Login
+      - name: Login to Azure using OIDC
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Show Azure Account
-        run: az account show
+      - name: Create Resource Group
+        run: |
+          az group create \
+          --name $RESOURCE_GROUP \
+          --location $LOCATION
+
+      - name: Create Virtual Network
+        run: |
+          az network vnet create \
+          --resource-group $RESOURCE_GROUP \
+          --name $VNET_NAME \
+          --address-prefix 10.0.0.0/16 \
+          --subnet-name default \
+          --subnet-prefix 10.0.1.0/24
+
+      - name: Create Network Security Group
+        run: |
+          az network nsg create \
+          --resource-group $RESOURCE_GROUP \
+          --name $NSG_NAME
+
+      - name: Verify deployed resources
+        run: |
+          echo "===== Resource Groups ====="
+          az group list --output table
+
+          echo "===== VNets ====="
+          az network vnet list \
+          --resource-group $RESOURCE_GROUP \
+          --output table
+
+          echo "===== NSGs ====="
+          az network nsg list \
+          --resource-group $RESOURCE_GROUP \
+          --output table
+
+      - name: Logout
+        run: az logout
