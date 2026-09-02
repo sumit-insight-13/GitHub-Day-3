@@ -4,9 +4,9 @@
 
 This repository contains hands-on exercises, assignments, and examples completed during Terraform training.
 
-## Objectives
+## Training Objectives
 
-- Learn Terraform fundamentals
+- Learn Terraform fundamentals and best practices
 - Understand Infrastructure as Code (IaC)
 - Deploy resources on Azure
 - Manage Terraform state files
